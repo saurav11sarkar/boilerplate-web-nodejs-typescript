@@ -135,10 +135,7 @@ const resetPassword = async (
     throw new AppError(400, 'Invalid or expired OTP');
   }
 
-  user.password = await bcrypt.hash(
-    newPassword,
-    Number(config.bcryptSaltRounds),
-  );
+  user.password = newPassword;
   user.otp = undefined;
   user.otpExpiry = undefined;
   await user.save();
