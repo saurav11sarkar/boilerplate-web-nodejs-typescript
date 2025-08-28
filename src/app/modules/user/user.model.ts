@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
-import { IUser } from "./user.interface";
-import bcrypt from "bcryptjs";
-import config from "../../config";
+import mongoose from 'mongoose';
+import { IUser } from './user.interface';
+import bcrypt from 'bcryptjs';
+import config from '../../config';
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -19,21 +19,21 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["admin", "user"],
-      default: "user",
+      enum: ['admin', 'user'],
+      default: 'user',
     },
     profileImage: {
       type: String,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
     this.password = await bcrypt.hash(
       this.password,
-      Number(config.bcryptSaltRounds)
+      Number(config.bcryptSaltRounds),
     );
   }
   next();
@@ -43,5 +43,5 @@ userSchema.methods.comparePassword = async function (password: string) {
   return await bcrypt.compare(password, this.password);
 };
 
-const User = mongoose.model<IUser>("User", userSchema);
+const User = mongoose.model<IUser>('User', userSchema);
 export default User;

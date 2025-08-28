@@ -1,4 +1,4 @@
-import { TErrorSources, TGenericErrorResponse } from "../interface";
+import { TErrorSources, TGenericErrorResponse } from '../interface';
 
 const handleDuplicateError = (err: any): TGenericErrorResponse => {
   // Extract value within double quotes using regex

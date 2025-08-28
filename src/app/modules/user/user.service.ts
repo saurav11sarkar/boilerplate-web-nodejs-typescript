@@ -1,12 +1,12 @@
-import AppError from "../../error/appError";
-import { fileUploader } from "../../helper/fileUploder";
-import pagination, { IOption } from "../../helper/pagenation";
-import { IUser } from "./user.interface";
-import User from "./user.model";
+import AppError from '../../error/appError';
+import { fileUploader } from '../../helper/fileUploder';
+import pagination, { IOption } from '../../helper/pagenation';
+import { IUser } from './user.interface';
+import User from './user.model';
 
 const createUser = async (payload: IUser) => {
   const result = await User.create(payload);
-  
+
   return result;
 };
 
@@ -15,12 +15,12 @@ const getAllUser = async (params: any, options: IOption) => {
   const { searchTerm, ...filterData } = params;
 
   const andCondition: any[] = [];
-  const userSearchableFields = ["name", "email", "role"];
+  const userSearchableFields = ['name', 'email', 'role'];
 
   if (searchTerm) {
     andCondition.push({
       $or: userSearchableFields.map((field) => ({
-        [field]: { $regex: searchTerm, $options: "i" },
+        [field]: { $regex: searchTerm, $options: 'i' },
       })),
     });
   }
@@ -60,12 +60,12 @@ const getUserById = async (id: string) => {
 const updateUserById = async (
   id: string,
   payload: IUser,
-  file?: Express.Multer.File
+  file?: Express.Multer.File,
 ) => {
   if (file) {
     const uploadProfile = await fileUploader.uploadToCloudinary(file);
     if (uploadProfile?.secure_url) {
-      throw new AppError(400, "Failed to upload profile image");
+      throw new AppError(400, 'Failed to upload profile image');
     }
     payload.profileImage = uploadProfile.secure_url;
   }

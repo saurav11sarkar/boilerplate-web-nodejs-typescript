@@ -1,13 +1,12 @@
-import nodemailer from "nodemailer";
-import config from "../config";
+import nodemailer from 'nodemailer';
+import config from '../config';
 
 const sendMailer = async (
   email: string,
   subject?: string,
   text?: string,
-  html?: string
+  html?: string,
 ) => {
-  
   const transporter = nodemailer.createTransport({
     host: config.email.host,
     port: Number(config.email.port),
@@ -25,7 +24,7 @@ const sendMailer = async (
     html,
   });
 
-  console.log("Message sent:", info.messageId);
+  console.log('Message sent:', info.messageId);
 };
 
 export default sendMailer;

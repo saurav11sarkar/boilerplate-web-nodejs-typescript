@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response } from 'express';
 
 const sendResponse = <T>(
   res: Response,
@@ -8,7 +8,7 @@ const sendResponse = <T>(
     message: string;
     meta?: { total: number; page: number; limit: number };
     data?: T;
-  }
+  },
 ) => {
   const responseBody: typeof jsonData = {
     statusCode: jsonData.statusCode,

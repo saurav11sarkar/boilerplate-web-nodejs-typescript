@@ -1,10 +1,10 @@
-import multer from "multer";
-import path from "path";
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
-import { ICloudinaryResponse } from "../interface";
-import AppError from "../error/appError";
-import config from "../config";
+import multer from 'multer';
+import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs';
+import { ICloudinaryResponse } from '../interface';
+import AppError from '../error/appError';
+import config from '../config';
 
 cloudinary.config({
   cloud_name: config.cloudinary.name,
@@ -15,14 +15,14 @@ cloudinary.config({
 // Sanitize filename function
 const sanitizeFileName = (originalName: string) => {
   return originalName
-    .replace(/\s+/g, "_") // space → underscore
-    .replace(/[^a-zA-Z0-9._-]/g, "") // remove special chars
+    .replace(/\s+/g, '_') // space → underscore
+    .replace(/[^a-zA-Z0-9._-]/g, '') // remove special chars
     .toLowerCase();
 };
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(process.cwd(), "uploads"));
+    cb(null, path.join(process.cwd(), 'uploads'));
   },
   filename: function (req, file, cb) {
     const safeName = sanitizeFileName(file.originalname);
@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const uploadToCloudinary = async (
-  file: Express.Multer.File
+  file: Express.Multer.File,
 ): Promise<ICloudinaryResponse> => {
   return new Promise<ICloudinaryResponse>((resolve, reject) => {
     const safeName = sanitizeFileName(file.originalname);
@@ -42,9 +42,9 @@ const uploadToCloudinary = async (
       file.path,
       {
         public_id: safeName,
-        folder: "File_Uploader",
-        resource_type: "auto",
-        transformation: { width: 500, height: 500, crop: "limit" },
+        folder: 'File_Uploader',
+        resource_type: 'auto',
+        transformation: { width: 500, height: 500, crop: 'limit' },
       },
       (error, result) => {
         fs.unlinkSync(file.path); // remove temp file
@@ -56,11 +56,11 @@ const uploadToCloudinary = async (
           reject(
             new AppError(
               400,
-              "Upload failed: No result returned from Cloudinary"
-            )
+              'Upload failed: No result returned from Cloudinary',
+            ),
           );
         }
-      }
+      },
     );
   });
 };

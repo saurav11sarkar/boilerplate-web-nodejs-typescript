@@ -1,7 +1,7 @@
-import catchAsync from "../../utils/catchAsycn";
-import sendResponse from "../../utils/sendResponse";
-import pick from "../../helper/pick";
-import { userService } from "./user.service";
+import catchAsync from '../../utils/catchAsycn';
+import sendResponse from '../../utils/sendResponse';
+import pick from '../../helper/pick';
+import { userService } from './user.service';
 
 const createUser = catchAsync(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -9,19 +9,19 @@ const createUser = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User created successfully",
+    message: 'User created successfully',
     data: result,
   });
 });
 
 const getAllUser = catchAsync(async (req, res) => {
-  const filters = pick(req.query, ["searchTerm", "role", "name", "email"]);
-  const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+  const filters = pick(req.query, ['searchTerm', 'role', 'name', 'email']);
+  const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
   const result = await userService.getAllUser(filters, options);
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User fetched successfully",
+    message: 'User fetched successfully',
     data: result,
   });
 });
@@ -31,7 +31,7 @@ const getUserById = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User fetched successfully",
+    message: 'User fetched successfully',
     data: result,
   });
 });
@@ -42,12 +42,12 @@ const updateUserById = catchAsync(async (req, res) => {
   const result = await userService.updateUserById(
     req.params.id,
     fromData,
-    file
+    file,
   );
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User updated successfully",
+    message: 'User updated successfully',
     data: result,
   });
 });
@@ -57,7 +57,7 @@ const deleteUserById = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User deleted successfully",
+    message: 'User deleted successfully',
     data: result,
   });
 });
