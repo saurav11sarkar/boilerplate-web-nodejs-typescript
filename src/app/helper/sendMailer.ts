@@ -4,7 +4,6 @@ import config from '../config';
 const sendMailer = async (
   email: string,
   subject?: string,
-  text?: string,
   html?: string,
 ) => {
   const transporter = nodemailer.createTransport({
@@ -17,10 +16,9 @@ const sendMailer = async (
     },
   });
   const info = await transporter.sendMail({
-    from: `"Padel leagues" ${config.email.from}`,
+    from: `"your company name" ${config.email.from}`,
     to: email,
     subject,
-    text,
     html,
   });
 

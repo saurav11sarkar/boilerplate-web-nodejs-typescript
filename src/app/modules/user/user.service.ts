@@ -1,12 +1,19 @@
 import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
 import pagination, { IOption } from '../../helper/pagenation';
+import sendMailer from '../../helper/sendMailer';
+import createOtpTemplate from '../../utils/createOtpTemplate';
+
 import { IUser } from './user.interface';
 import User from './user.model';
 
 const createUser = async (payload: IUser) => {
   const result = await User.create(payload);
-
+  await sendMailer(
+    payload.email,
+    payload.name,
+    createOtpTemplate(payload.name, payload.email, 'created successfully'),
+  );
   return result;
 };
 
