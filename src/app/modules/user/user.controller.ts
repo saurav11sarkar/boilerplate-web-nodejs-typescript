@@ -4,8 +4,7 @@ import pick from '../../helper/pick';
 import { userService } from './user.service';
 
 const createUser = catchAsync(async (req, res) => {
-  const { name, email, password, role } = req.body;
-  const result = await userService.createUser({ name, email, password, role });
+  const result = await userService.createUser(req.body);
   sendResponse(res, {
     statusCode: 200,
     success: true,
