@@ -1,19 +1,15 @@
 import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
 import pagination, { IOption } from '../../helper/pagenation';
-import sendMailer from '../../helper/sendMailer';
-import createOtpTemplate from '../../utils/createOtpTemplate';
 
 import { IUser } from './user.interface';
 import User from './user.model';
 
 const createUser = async (payload: IUser) => {
   const result = await User.create(payload);
-  await sendMailer(
-    payload.email,
-    payload.name,
-    createOtpTemplate(payload.name, payload.email, 'created successfully'),
-  );
+  if (!result) {
+    throw new AppError(400, 'Failed to create user');
+  }
   return result;
 };
 
@@ -47,6 +43,10 @@ const getAllUser = async (params: any, options: IOption) => {
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any);
 
+  if (!result) {
+    throw new AppError(404, 'Users not found');
+  }
+
   const total = await User.countDocuments(whereCondition);
 
   return {
@@ -61,6 +61,9 @@ const getAllUser = async (params: any, options: IOption) => {
 
 const getUserById = async (id: string) => {
   const result = await User.findById(id);
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
   return result;
 };
 
@@ -69,19 +72,37 @@ const updateUserById = async (
   payload: IUser,
   file?: Express.Multer.File,
 ) => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
   if (file) {
     const uploadProfile = await fileUploader.uploadToCloudinary(file);
-    if (uploadProfile?.secure_url) {
+    if (!uploadProfile?.secure_url) {
       throw new AppError(400, 'Failed to upload profile image');
     }
     payload.profileImage = uploadProfile.secure_url;
   }
   const result = await User.findByIdAndUpdate(id, payload, { new: true });
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
   return result;
 };
 
 const deleteUserById = async (id: string) => {
   const result = await User.findByIdAndDelete(id);
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
+  return result;
+};
+
+const profile = async (id: string) => {
+  const result = await User.findById(id);
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
   return result;
 };
 
@@ -91,4 +112,5 @@ export const userService = {
   getUserById,
   updateUserById,
   deleteUserById,
+  profile,
 };
