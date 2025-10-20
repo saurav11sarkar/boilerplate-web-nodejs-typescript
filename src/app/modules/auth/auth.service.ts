@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { JwtPayload, Secret } from 'jsonwebtoken';
 import config from '../../config';
 import AppError from '../../error/appError';
@@ -5,57 +7,19 @@ import { IUser } from '../user/user.interface';
 import User from '../user/user.model';
 import { jwtHelpers } from '../../helper/jwtHelpers';
 import sendMailer from '../../helper/sendMailer';
-
 import bcrypt from 'bcryptjs';
 import createOtpTemplate from '../../utils/createOtpTemplate';
-import createUserSuccessfully from '../../utils/createUserSuccessfully';
 
 const registerUser = async (payload: Partial<IUser>) => {
   const exist = await User.findOne({ email: payload.email });
   if (exist) throw new AppError(400, 'User already exists');
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+  const idx = Math.floor(Math.random() * 100);
+  payload.profileImage = `https://avatar.iran.liara.run/public/${idx}.png`;
 
-  const user = await User.create({
-    ...payload,
-    otp,
-    otpExpiry,
-    verified: false,
-  });
+  const user = await User.create(payload);
 
-  // send OTP email
-  await sendMailer(
-    user.email,
-    user.name,
-    createOtpTemplate(otp, user.email, 'Your Company'),
-  );
-
-  return {
-    message: 'Registration successful. Please verify your email.',
-  };
-};
-
-const verifyEmail = async (email: string, otp: string) => {
-  const user = await User.findOne({ email });
-  if (!user) throw new AppError(404, 'User not found');
-
-  if (user.otp !== otp || !user.otpExpiry || user.otpExpiry < new Date()) {
-    throw new AppError(400, 'Invalid or expired OTP');
-  }
-
-  user.verified = true;
-  user.otp = undefined;
-  user.otpExpiry = undefined;
-  await user.save();
-
-  await sendMailer(
-    user.email,
-    user.name,
-    createUserSuccessfully(user.name, user.email, 'Your Company'),
-  );
-
-  return { message: 'Email verified successfully' };
+  return user;
 };
 
 const loginUser = async (payload: Partial<IUser>) => {
@@ -116,28 +80,36 @@ const forgotPassword = async (email: string) => {
 
   await sendMailer(
     user.email,
-    user.name,
+    user.firstName + ' ' + user.lastName,
     createOtpTemplate(otp, user.email, 'Your Company'),
   );
 
   return { message: 'OTP sent to your email' };
 };
 
-const resetPassword = async (
-  email: string,
-  otp: string,
-  newPassword: string,
-) => {
+const verifyEmail = async (email: string, otp: string) => {
   const user = await User.findOne({ email });
-  if (!user) throw new AppError(404, 'User not found');
+  if (!user) throw new AppError(401, 'User not found');
 
   if (user.otp !== otp || !user.otpExpiry || user.otpExpiry < new Date()) {
     throw new AppError(400, 'Invalid or expired OTP');
   }
 
+  user.verified = true;
+  (user as any).otp = undefined;
+  (user as any).otpExpiry = undefined;
+  await user.save();
+
+  return { message: 'Email verified successfully' };
+};
+
+const resetPassword = async (email: string, newPassword: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError(404, 'User not found');
+
   user.password = newPassword;
-  user.otp = undefined;
-  user.otpExpiry = undefined;
+  (user as any).otp = undefined;
+  (user as any).otpExpiry = undefined;
   await user.save();
 
   // Auto-login after reset
@@ -154,18 +126,34 @@ const resetPassword = async (
 
   const { password, ...userWithoutPassword } = user.toObject();
   return {
-    message: 'Password reset successfully',
     accessToken,
     refreshToken,
     user: userWithoutPassword,
   };
 };
 
+const changePassword = async (
+  userId: string,
+  oldPassword: string,
+  newPassword: string,
+) => {
+  const user = await User.findById(userId);
+  if (!user) throw new AppError(404, 'User not found');
+  const isPasswordMatched = await bcrypt.compare(oldPassword, user.password);
+  if (!isPasswordMatched) throw new AppError(400, 'Password not matched');
+
+  user.password = newPassword;
+  await user.save();
+
+  return { message: 'Password changed successfully' };
+};
+
 export const authService = {
   registerUser,
-  verifyEmail,
   loginUser,
   refreshToken,
   forgotPassword,
+  verifyEmail,
   resetPassword,
+  changePassword,
 };

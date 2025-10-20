@@ -1,11 +1,15 @@
 export interface IUser {
-  name: string;
+  firstName: string;
+  lastName?: string;
   email: string;
   password: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'contractor';
   profileImage?: string;
+  bio?: string;
+  phone?: string;
+  location?: string;
   otp?: string;
   otpExpiry?: Date;
   verified?: boolean;
-  comparePassword(password: string): Promise<boolean>;
+  stripeAccountId?: string;
 }
