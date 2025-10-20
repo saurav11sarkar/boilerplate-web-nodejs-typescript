@@ -21,12 +21,17 @@ const getAllUser = catchAsync(async (req, res) => {
     statusCode: 200,
     success: true,
     message: 'User fetched successfully',
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
 const getUserById = catchAsync(async (req, res) => {
-  const result = await userService.getUserById(req.params.id);
+  const { id } = req.params;
+  if (!id) {
+    throw new Error('User ID is required');
+  }
+  const result = await userService.getUserById(id);
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -37,12 +42,8 @@ const getUserById = catchAsync(async (req, res) => {
 
 const updateUserById = catchAsync(async (req, res) => {
   const file = req.file;
-  const fromData = req.body.data ? req.body.data : req.body;
-  const result = await userService.updateUserById(
-    req.params.id,
-    fromData,
-    file,
-  );
+  const fromData = req.body.data ? JSON.parse(req.body.data) : req.body;
+  const result = await userService.updateUserById(req.user.id, fromData, file);
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -52,11 +53,25 @@ const updateUserById = catchAsync(async (req, res) => {
 });
 
 const deleteUserById = catchAsync(async (req, res) => {
-  const result = await userService.deleteUserById(req.params.id);
+  const { id } = req.params;
+  if (!id) {
+    throw new Error('User ID is required');
+  }
+  const result = await userService.deleteUserById(id);
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'User deleted successfully',
+    data: result,
+  });
+});
+
+const profile = catchAsync(async (req, res) => {
+  const result = await userService.profile(req.user.id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User profile fetched successfully',
     data: result,
   });
 });
@@ -67,4 +82,5 @@ export const userController = {
   getUserById,
   updateUserById,
   deleteUserById,
+  profile,
 };

@@ -7,9 +7,9 @@ import AppError from '../error/appError';
 import config from '../config';
 
 cloudinary.config({
-  cloud_name: config.cloudinary.name,
-  api_key: config.cloudinary.apiKey,
-  api_secret: config.cloudinary.apiSecret,
+  cloud_name: config.cloudinary.name!,
+  api_key: config.cloudinary.apiKey!,
+  api_secret: config.cloudinary.apiSecret!,
 });
 
 // Sanitize filename function
@@ -25,12 +25,27 @@ const storage = multer.diskStorage({
     cb(null, path.join(process.cwd(), 'uploads'));
   },
   filename: function (req, file, cb) {
-    const safeName = sanitizeFileName(file.originalname);
+    const safeName = Date.now() + '-' + sanitizeFileName(file.originalname);
     cb(null, safeName);
   },
 });
 
-const upload = multer({ storage });
+// Multer instance (image + video support)
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|mp4|mov|avi|mkv/;
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.test(ext)) {
+      cb(null, true);
+    } else {
+      cb(new AppError(400, 'Only images and videos are allowed'));
+    }
+  },
+  // limits: {
+  //   fileSize: 50 * 1024 * 1024, // 50MB max
+  // },
+});
 
 const uploadToCloudinary = async (
   file: Express.Multer.File,
@@ -38,13 +53,19 @@ const uploadToCloudinary = async (
   return new Promise<ICloudinaryResponse>((resolve, reject) => {
     const safeName = sanitizeFileName(file.originalname);
 
+    // Detect resource type
+    const ext = path.extname(file.originalname).toLowerCase();
+    const isVideo = /mp4|mov|avi|mkv/.test(ext);
+
     cloudinary.uploader.upload(
       file.path,
       {
         public_id: safeName,
         folder: 'File_Uploader',
-        resource_type: 'auto',
-        transformation: { width: 500, height: 500, crop: 'limit' },
+        resource_type: isVideo ? 'video' : 'image',
+        ...(isVideo
+          ? {} // no transformation for video by default
+          : { transformation: { width: 500, height: 500, crop: 'limit' } }),
       },
       (error, result) => {
         fs.unlinkSync(file.path); // remove temp file

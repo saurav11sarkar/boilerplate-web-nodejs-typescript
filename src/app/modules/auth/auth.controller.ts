@@ -4,25 +4,18 @@ import sendResponse from '../../utils/sendResponse';
 import { authService } from './auth.service';
 
 const registerUser = catchAsync(async (req, res) => {
-  const { name, email, password } = req.body;
-  const result = await authService.registerUser({ name, email, password });
+  const { firstName, lastName, email, password } = req.body;
+  const result = await authService.registerUser({
+    firstName,
+    lastName,
+    email,
+    password,
+  });
 
   sendResponse(res, {
     statusCode: 201,
     success: true,
     message: 'User registered successfully. Please verify your email.',
-    data: result,
-  });
-});
-
-const verifyEmail = catchAsync(async (req, res) => {
-  const { email, otp } = req.body;
-  const result = await authService.verifyEmail(email, otp);
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Email verified successfully',
     data: result,
   });
 });
@@ -72,9 +65,21 @@ const forgotPassword = catchAsync(async (req, res) => {
   });
 });
 
+const verifyEmail = catchAsync(async (req, res) => {
+  const { email, otp } = req.body;
+  const result = await authService.verifyEmail(email, otp);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Email verified successfully',
+    data: result,
+  });
+});
+
 const resetPassword = catchAsync(async (req, res) => {
-  const { email, otp, newPassword } = req.body;
-  const result = await authService.resetPassword(email, otp, newPassword);
+  const { email, newPassword } = req.body;
+  const result = await authService.resetPassword(email, newPassword);
 
   // Set the new refreshToken in cookie
   res.cookie('refreshToken', result.refreshToken, {
@@ -103,6 +108,23 @@ const logoutUser = catchAsync(async (req, res) => {
   });
 });
 
+const changePassword = catchAsync(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const result = await authService.changePassword(
+    req.user?.id,
+    oldPassword,
+    newPassword,
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Password changed successfully',
+    data: result,
+  });
+});
+
 export const authController = {
   registerUser,
   verifyEmail,
@@ -111,4 +133,5 @@ export const authController = {
   forgotPassword,
   resetPassword,
   logoutUser,
+  changePassword,
 };

@@ -5,14 +5,23 @@ import config from '../../config';
 
 const userSchema = new mongoose.Schema<IUser>(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String },
+    email: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['admin', 'user'], default: 'user' },
+    role: {
+      type: String,
+      enum: ['admin', 'user', 'contractor'],
+      default: 'user',
+    },
     profileImage: { type: String },
+    bio: { type: String },
+    location: { type: String },
+    phone: { type: String },
     otp: { type: String },
     otpExpiry: { type: Date },
-    verified: { type: Boolean, default: false },
+    verified: { type: Boolean, default: true },
+    stripeAccountId: { type: String },
   },
   { timestamps: true },
 );
@@ -26,10 +35,6 @@ userSchema.pre('save', async function (next) {
   }
   next();
 });
-
-// userSchema.methods.comparePassword = async function (password: string) {
-//   return await bcrypt.compare(password, this.password);
-// };
 
 const User = mongoose.model<IUser>('User', userSchema);
 export default User;
