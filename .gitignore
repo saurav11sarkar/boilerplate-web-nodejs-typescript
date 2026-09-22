@@ -144,9 +144,3 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-
-# Local History for Visual Studio Code
-.history/
-
-# End of https://mrkandreev.name/snippets/gitignore-generator/#Node,Windows,VisualStudioCode
-config.bat
